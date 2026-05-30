@@ -14,8 +14,8 @@ const createPlaylist=asyncHandler(async(req,res)=>{
     const playlist=await Playlist.create({
         name,
         description,
-        videos=[],
-        owner=req.user?._id
+        videos:[],
+        owner:req.user?._id
     })
 
     return res.status(200)
@@ -86,7 +86,7 @@ const getPlaylistById=asyncHandler(async(req,res)=>{
                         $lookup:{
                             from:"users",
                             localField:"owner",
-                            foreignField:"id",
+                            foreignField:"_id",
                             as:"owner",
                             pipeline:[
                                 {
@@ -113,9 +113,9 @@ const getPlaylistById=asyncHandler(async(req,res)=>{
             $lookup:{
                 from:"users",
                 localField:"owner",
-                foreignField:_id,
+                foreignField:"_id",
                 as:"owner",
-                $pipeline:[
+                pipeline:[
                     {
                         $project:{
                             fullName:1,
@@ -171,7 +171,7 @@ const removeVideoFromPlaylist=asyncHandler(async(req,res)=>{
 
     if(!videoId) throw new ApiError(400,"Video not found!!!");
 
-    const playlist=await Playlist.findByIdAndDelete(
+    const playlist=await Playlist.findByIdAndUpdate(
         playlistId,
         {
             $pull:{
@@ -192,7 +192,7 @@ const removeVideoFromPlaylist=asyncHandler(async(req,res)=>{
 const deletePlaylist=asyncHandler(async(req,res)=>{
     const { playlistId }=req.params
     //to delete a playlist
-    const playlist=await Playlist.findByIdAndDelete(playlistId)
+    const playlist=await Playlist.findByIdAndDelete(playlistId);
     if(!playlist) throw new ApiError(400,"Playlist not found!!!");
 
     return res.status(200)
