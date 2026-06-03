@@ -9,7 +9,7 @@ const tweetSchema=new Schema(
         },
         owner:{
             type:Schema.Types.ObjectId,
-            reference:"User"
+            ref:"User"
         }
     }
     ,{timestamps:true})
