@@ -142,5 +142,8 @@ dist
 .svelte-kit
 
 public/temp/
+node_modules/
+.env
+public/temp/*
 
 # End of https://www.toptal.com/developers/gitignore/api/node
