@@ -6,7 +6,14 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 
-const generateAccessAndRefreshTokens=async (userId)=>{
+const cookieOptions = {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'None'
+}
+
+
+const generateAccessAndRefreshTokens=async(userId)=>{
     try {
         const user=await User.findById(userId)
         const accessToken=user.generateAccessToken()
@@ -101,14 +108,10 @@ const loginUser=asyncHandler(async(req,res)=>{
 
     const loggedInUser=await User.findById(user._id).select("-password -refreshToken")
 
-    const options={
-        httpOnly:true,
-        secure:true
-    }
     return res
     .status(200)
-    .cookie("accessToken",accessToken,options)
-    .cookie("refreshToken",refreshToken,options)
+    .cookie("accessToken",accessToken,cookieOptions)
+    .cookie("refreshToken",refreshToken,cookieOptions)
     .json(
         new ApiResponse(200,
             {
@@ -132,15 +135,11 @@ const logoutUser=asyncHandler(async(req,res)=>{
             new:true
         }
     )
-    const options={
-        httpOnly:true,
-        secure:true
-    }
 
     return res
     .status(200)
-    .clearCookie("accessToken",options)
-    .clearCookie("refreshToken",options)
+    .clearCookie("accessToken",cookieOptions)
+    .clearCookie("refreshToken",cookieOptions)
     .json(new ApiResponse(200,{},"User logged Out successfully!"))
 })
 
@@ -167,16 +166,11 @@ try {
         
        }
     
-       const options={
-        httpOnly:true,
-        secure:true
-       }
-    
        const{accessToken:newaccessToken,refreshToken:newrefreshToken}=await generateAccessAndRefreshTokens(user._id)
        return res
        .status(200)
-       .cookie("accessToken",newaccessToken,options)
-       .cookie("refreshToken",newrefreshToken,options)
+       .cookie("accessToken",newaccessToken,cookieOptions)
+       .cookie("refreshToken",newrefreshToken,cookieOptions)
        .json(
         new ApiResponse(
             200,
@@ -295,7 +289,7 @@ const getUserChannelProfile=asyncHandler(async(req,res)=>{
         },
         {
             $lookup:{
-                from:"subsriptions",
+                from:"subscriptions",
                 localField:"_id",
                 foreignField:"channel",
                 as:"subscribers"
@@ -303,7 +297,7 @@ const getUserChannelProfile=asyncHandler(async(req,res)=>{
         },
         {
             $lookup:{
-                from:"subsriptions",
+                from:"subscriptions",
                 localField:"_id",
                 foreignField:"subscriber",
                 as:"subscribedTo"
