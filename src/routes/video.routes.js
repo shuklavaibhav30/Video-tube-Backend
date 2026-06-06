@@ -10,6 +10,7 @@ import {
 } from "../controllers/video.controller.js"
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { getOptionalUser} from "../middlewares/optionalAuth.middleware.js";
 const router=Router()
 
 // router.route("/")
@@ -28,7 +29,7 @@ const router=Router()
 // .delete(deleteVideo)
 
 router.route("/").get(getAllVideos)
-router.route("/:videoId").get(getVideoById)
+router.route("/:videoId").get(getOptionalUser,getVideoById)
 // All the following routes require authentication
 router.use(verifyJWT)
 router.route("/").post(
