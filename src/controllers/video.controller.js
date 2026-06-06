@@ -40,6 +40,32 @@ const getAllVideos=asyncHandler(async(req,res)=>{
             [sortBy]:sortType==="desc"?-1:1
         }
     })
+    pipeline.push(
+        {
+            $lookup: {
+                from: "users",
+                localField: "owner",
+                foreignField: "_id",
+                as: "owner",
+                pipeline: [
+                    {
+                        $project: {
+                            username: 1,
+                            fullName: 1,
+                            avatar: 1
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            $addFields: {
+                owner: {
+                    $first: "$owner"
+                }
+            }
+        }
+    )
 
     const options={page:parseInt(page),limit:parseInt(limit)}
     const videos=await Video.aggregatePaginate(Video.aggregate(pipeline),options)
