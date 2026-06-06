@@ -20,6 +20,63 @@ const createTweet=asyncHandler(async(req,res)=>{
     .json(new ApiResponse(200,tweet,"Tweet created!!!"))
 })
 
+const getAllTweets=asyncHandler(async(req,res)=>{
+    const tweets=await Tweet.aggregate([
+        {
+            $lookup:{
+                from:"users",
+                foreignField:"_id",
+                localField:"owner",
+                as:"owner",
+                pipeline:[
+                    {
+                        $project:{
+                            fullName:1,
+                            username:1,
+                            avatar:1
+                        }
+                    }
+                ]
+            }
+        },{
+            $addFields:{
+                owner:{$first:"$owner"}
+            }
+        },
+        {
+            $lookup:{
+                from:"likes",
+                localField:"_id",
+                foreignField:"tweet",
+                as:"likes"
+            }
+        },
+        {
+            $addFields:{
+                likesCount:{
+                    $size:"$likes"
+                }
+            }
+        },
+        {
+            $sort:{
+                createdAt:-1
+            }
+        },
+        {
+            $project:{
+                content:1,
+                owner:1,
+                likesCount:1,
+                createdAt:1
+            }
+        }
+    ]);
+    return res
+    .status(200)
+    .json(new ApiResponse(200,tweets,"All Tweets Fetched!!!"));
+});
+
 const getUserTweets=asyncHandler(async(req,res)=>{
     //get the user Tweets
 
@@ -133,6 +190,7 @@ const deleteTweets=asyncHandler(async(req,res)=>{
 export{
     createTweet,
     getUserTweets,
+    getAllTweets,
     updateTweets,
     deleteTweets
 }

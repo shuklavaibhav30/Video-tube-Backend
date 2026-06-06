@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
     createTweet,
     getUserTweets,
+    getAllTweets,
     updateTweets,
     deleteTweets
 } from "../controllers/tweet.controller.js";
@@ -14,7 +15,7 @@ const router=Router()
 
 router.use(verifyJWT)
 
-router.route("/").post(createTweet)
+router.route("/").get(getAllTweets).post(createTweet)
 router.route("/user/:userId").get(getUserTweets)
 router.route("/tweet/:tweetId").patch(updateTweets).delete(deleteTweets)
 
