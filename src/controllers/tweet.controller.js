@@ -55,6 +55,14 @@ const getAllTweets=asyncHandler(async(req,res)=>{
             $addFields:{
                 likesCount:{
                     $size:"$likes"
+                },
+
+                isLiked:{
+                    $cond:{
+                        if:{$in:[new mongoose.Types.ObjectId(req.user?._id),"$likes.likedBy"]},
+                        then:true,
+                        else:false
+                    }
                 }
             }
         },
@@ -68,6 +76,7 @@ const getAllTweets=asyncHandler(async(req,res)=>{
                 content:1,
                 owner:1,
                 likesCount:1,
+                isLiked:1,
                 createdAt:1
             }
         }
@@ -126,13 +135,21 @@ const getUserTweets=asyncHandler(async(req,res)=>{
         },
         {
             $addFields:{
-                likesCount:{$size:"$likes"}
+                likesCount:{$size:"$likes"},
+                isLiked:{
+                    $cond:{
+                        if:{$in:[new mongoose.Types.ObjectId(req.user?._id),"$likes.likedBy"]},
+                        then:true,
+                        else:false
+                    }
+                }
             }
         },{
             $project:{
                 content:1,
                 owner:1,
                 likesCount:1,
+                isLiked:1,
                 createdAt:1
             }
         }
