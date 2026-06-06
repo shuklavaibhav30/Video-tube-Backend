@@ -9,7 +9,7 @@ const createPlaylist=asyncHandler(async(req,res)=>{
 
     //to create a playlist
     if(!name||!description){
-        throw new ApiError(401,"name and descriptions are required!!!")
+        throw new ApiError(400,"name and descriptions are required!!!")
     }
     const playlist=await Playlist.create({
         name,
@@ -54,10 +54,14 @@ const getUserPlaylists=asyncHandler(async(req,res)=>{
                     name:1,
                     description:1,
                     totalVideos:1,
+                    videos: { $slice: ["$videos", 1] }, // Include the first video for thumbnail
                     createdAt:1
                 }
             }
         ])
+    if(!userPlaylist.length) {
+        return res.status(200).json(new ApiResponse(200,[],"No playlist found for this user!!!"))
+    }
     return res
     .status(200)
     .json(new ApiResponse(200,userPlaylist,"user playlist fetched!!!"))
