@@ -28,6 +28,7 @@ app.use(cors({
             "http://localhost:5175",
             "http://localhost:5176",
             "http://localhost:3000",
+            "https://vibe-tube-frontend-ashen.vercel.app"
         ]
         if(!origin || allowedOrigins.includes(origin)) {
             callback(null, true)
