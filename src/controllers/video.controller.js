@@ -109,6 +109,7 @@ const publishVideo=asyncHandler(async(req,res)=>{
 const getVideoById=asyncHandler(async(req,res)=>{
     const {videoId}=req.params
     //to get an video by id
+    if(!mongoose.isValidObjectId(videoId))  throw new ApiError(400,"Invalid Video ID!");
     const user=await User.findById(req.user?._id);
     const isAlreadyWatched=user?.watchHistory?.includes(videoId);
 
@@ -179,18 +180,18 @@ const getVideoById=asyncHandler(async(req,res)=>{
                 },
                 //count the likes
                 isLiked:{
-                    $cond:{
-                        if:{$in:[req.user?._id,"$likes.likedBy"]},
-                        then:true,
-                        else:false
-                    }
+                    $cond:[
+                        { $in:[req.user?._id,"$likes.likedBy"] },
+                        true,
+                        false
+                    ]
                 },
                 isSubscribed:{
-                    $cond:{
-                        if:{$in:[req.user?._id, "$subscribers.subscriber"]},
-                        then:true,
-                        else:false
-                    }
+                    $cond:[
+                        { $in:[req.user?._id,"$subscribers.subscriber"] },
+                        true,
+                        false
+                    ]
                 }
             }
         },
