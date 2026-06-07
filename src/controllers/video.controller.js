@@ -109,16 +109,23 @@ const publishVideo=asyncHandler(async(req,res)=>{
 const getVideoById=asyncHandler(async(req,res)=>{
     const {videoId}=req.params
     //to get an video by id
+    const user=await User.findById(req.user?._id);
+    const isAlreadyWatched=user?.watchHistory?.includes(videoId);
 
-    //increment the views and add to user watchHistory
-    await Video.findByIdAndUpdate(videoId,{
+    // Only increment the views and add to user watchHistory if the video is unwatched previously by user
+    if(!isAlreadyWatched){
+        await Video.findByIdAndUpdate(videoId,{
         $inc:{views:1}
-    });
-    await User.findByIdAndUpdate(req.user?._id,{
+        });
+        //adding to watch history such that it would increment once only
+        await User.findByIdAndUpdate(req.user?._id,{
         $addToSet:{
             watchHistory:videoId
         }
-    });
+        });
+    }
+    
+    
     const video= await Video.aggregate([
         {
             $match:{
