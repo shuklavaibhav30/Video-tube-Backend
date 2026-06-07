@@ -88,7 +88,9 @@ const getSubscribedChannels=asyncHandler(async(req,res)=>{
 
     const subscribedChannels=await Subscription.aggregate([
         {
-            $match:new mongoose.Types.ObjectId(subscriberId)
+            $match:{
+                subscriber:new mongoose.Types.ObjectId(subscriberId)
+            }
         },
         {
             $lookup:{

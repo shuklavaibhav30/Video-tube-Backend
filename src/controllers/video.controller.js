@@ -141,6 +141,15 @@ const getVideoById=asyncHandler(async(req,res)=>{
             }
 
         },
+        {
+            $lookup:{
+                from:"subscriptions",
+                localField:"owner",
+                foreignField:"channel",
+                as:"subscribers"
+            }
+
+        },
 
         {
             $addFields:{
@@ -157,12 +166,20 @@ const getVideoById=asyncHandler(async(req,res)=>{
                         then:true,
                         else:false
                     }
+                },
+                isSubscribed:{
+                    $cond:{
+                        $if:{$in:[req.user?._id, "$subscribers.subscriber"]},
+                        then:true,
+                        else:false
+                    }
                 }
             }
         },
         {
             $project:{
-                likes:0//remove the raw likes array to keep response clean
+                likes:0,//remove the raw likes array to keep response clean
+                subscribers:0
             }
         }
     ])
