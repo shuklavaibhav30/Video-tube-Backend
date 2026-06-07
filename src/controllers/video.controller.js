@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
 import { Video } from "../models/video.model.js";
-import uploadOnCloudinary from "../utils/cloudinary.js";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 
 
