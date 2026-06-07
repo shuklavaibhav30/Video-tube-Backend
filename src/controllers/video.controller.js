@@ -108,6 +108,16 @@ const publishVideo=asyncHandler(async(req,res)=>{
 const getVideoById=asyncHandler(async(req,res)=>{
     const {videoId}=req.params
     //to get an video by id
+
+    //increment the views and add to user watchHistory
+    await Video.findByIdAndUpdate(videoId,{
+        $inc:{views:1}
+    });
+    await User.findByIdAndUpdate(req.user?._id,{
+        $addToSet:{
+            watchHistory:videoId
+        }
+    });
     const video= await Video.aggregate([
         {
             $match:{
