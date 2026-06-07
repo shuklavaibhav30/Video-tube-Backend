@@ -1,7 +1,13 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import {User} from "../models/user.model.js"
-import uploadOnCloudinary from "../utils/cloudinary.js";
+import { Video } from "../models/video.model.js";
+import {Tweet} from "../models/tweet.model.js";
+import {Playlist} from "../models/playlist.model.js";
+import {Like} from "../models/like.model.js";
+import { Subscription } from "../models/subscription.model.js";
+import {Comment} from "../models/comment.model.js";
+import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
@@ -313,7 +319,7 @@ const getUserChannelProfile=asyncHandler(async(req,res)=>{
                 },
                 isSubscribed:{
                     $cond:{
-                        if:{$in:[req.user?._id,"$subscribers.subscriber"]},
+                        if:{$in:[new mongoose.Types.ObjectId(req.user?._id),"$subscribers.subscriber"]},
                         then:true,
                         else:false
                     }
@@ -399,6 +405,78 @@ const getWatchHistory=asyncHandler(async(req,res)=>{
         user[0].watchHistory,
         "Watch History fetched successfully!!!"
     ))
+})
+
+const deleteUserAccount=asyncHandler(async(req,res)=>{
+    const userId=req.user._id;
+
+    //Get user to delete files from cloudinary
+    const user=await User.findById(userId);
+    if(!user){
+        throw new ApiError(404,"User Not Found!!!");
+    }
+
+    //DELETE user's videos and their files from cloudinary
+    const userVideos=await Video.find({owner:userId});
+    for(const video of userVideos){
+        //delete video file and thumbnail from cloudinary
+
+        const videoFilePublicId=video.videoFile.split("/").pop().split(".")[0];
+        const thumbnailPublicId=video.thumbnail.split("/").pop().split(".")[0];
+
+        await deleteFromCloudinary(videoFilePublicId,"video");
+        await deleteFromCloudinary(thumbnailPublicId,"image");
+
+        //delete likes and comments on the video
+        await Like.deleteMany({video:video._id});
+        await Comment.deleteMany({video:video._id});
+    }
+    await Video.deleteMany({owner:userId});
+
+    //Delete user's tweets and their likes
+
+    const userTweets=await Tweet.find({owner:userId});
+    for(const tweet of userTweets){
+        await Like.deleteMany({tweet:tweet._id});
+    }
+    await Tweet.deleteMany({owner:userId});
+
+    //delete user's playlists
+    await Playlist.deleteMany({owner:userId});
+
+    //delete user's comments
+    await Comment.deleteMany({owner:userId});
+
+    //delete user's likes
+    await Like.deleteMany({likedBy:userId});
+
+    //delete user's subscriptions (both as channel and subscriber)
+    await Subscription.deleteMany({
+        $or:[
+            {subscriber:userId},
+            {channel:userId}
+        ]
+    });
+
+    //delete user assets from Cloudinary
+    if(user.avatar){
+        const avatarPublicId=user.avatar.split("/").pop().split(".")[0];
+        await deleteFromCloudinary(avatarPublicId);
+    }
+    if(user.coverImage){
+        const coverImagePublicId=user.avatar.split("/").pop().split(".")[0];
+        await deleteFromCloudinary(coverImagePublicId);
+    }
+
+    //delete user from db
+    await User.findByIdAndDelete(userId);
+
+    //clear cookies
+    return res
+    .status(200)
+    .clearCookie("accessToken",cookieOptions)
+    .clearCookie("refreshToken",cookieOptions)
+    .json(new ApiResponse(200,{},"User account and all associated Data deleted successfully!"))
 })
 export {registerUser,
     loginUser,

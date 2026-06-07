@@ -19,6 +19,7 @@ const uploadOnCloudinary=async function(localFilePath) {
        .upload(localFilePath, {resource_type:"auto"})
        //FILE HAS BEEN UPLOADED SUCCESSFULLY
        console.log("File has been uploaded successfully",uploadResult.url);
+       fs.unlinkSync(localFilePath);// remove local file after successful upload to cloudinary
        return uploadResult;
        
        
@@ -29,4 +30,18 @@ const uploadOnCloudinary=async function(localFilePath) {
     };
 };  
 
-export default uploadOnCloudinary;
+
+const deleteFromCloudinary=async (publicId,resourceType="image")=>{
+    try{
+        if(!publicId)   return null;
+        const result=await cloudinary.uploader.destroy(publicId,{
+            resource_type:resourceType
+        });
+        return result;
+    }catch(er){
+        console.log("Cloudinary DELETION ERROR:",er.message);
+        return null;
+    }
+};
+
+export { uploadOnCloudinary,deleteFromCloudinary };
