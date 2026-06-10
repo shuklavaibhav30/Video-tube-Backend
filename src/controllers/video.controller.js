@@ -112,7 +112,7 @@ const getVideoById = asyncHandler(async (req, res) => {
     if (!mongoose.isValidObjectId(videoId)) throw new ApiError(400, "Invalid Video ID!");
     if (req.user?._id) {
         const user = await User.findById(req.user?._id);
-        const isAlreadyWatched = user?.watchHistory?.includes(videoId);
+        const isAlreadyWatched = user?.watchHistory?.some(id => id.toString()===videoId.toString());
 
         // Only increment the views and add to user watchHistory if the video is unwatched previously by user
         if (!isAlreadyWatched) {
