@@ -16,6 +16,7 @@ import {registerUser,
 import {upload} from "../middlewares/multer.middleware.js"
 
 import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { getOptionalUser } from "../middlewares/optionalAuth.middleware.js";
 import passport from "passport";
 
 const router=Router()
@@ -46,7 +47,7 @@ router.route("/current-user").get(verifyJWT,getCurrentUser)
 router.route("/update-accounts").patch(verifyJWT,updateAccountDetails)
 router.route("/avatar").patch(verifyJWT,upload.single("avatar"),updateUserAvatar)
 router.route("/cover-image").patch(verifyJWT,upload.single("coverImage"),updateCoverImage)
-router.route("/c/:username").get(verifyJWT,getUserChannelProfile)
+router.route("/c/:username").get(getOptionalUser,getUserChannelProfile)
 router.route("/history").get(verifyJWT,getWatchHistory)
 router.route("/delete-account").delete(verifyJWT,deleteUserAccount)
 export default router
