@@ -1,7 +1,7 @@
 import express from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser"
-import passport, { initialize } from "passport"
+import passport from "passport"
 import "./config/passport.js"
 
 
@@ -46,7 +46,7 @@ app.use(express.static("public"))
 
 app.use(cookieParser())
 
-app.use(passport,initialize())
+app.use(passport.initialize());
 
 
 
