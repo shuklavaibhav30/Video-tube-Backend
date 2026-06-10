@@ -110,9 +110,18 @@ const getVideoById = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     //to get an video by id
     if (!mongoose.isValidObjectId(videoId)) throw new ApiError(400, "Invalid Video ID!");
+
+    //logs
+    console.log("========== VIDEO API HIT ==========");
+    console.log("req.user =", req.user);
+    console.log("videoId =", videoId);
     if (req.user?._id) {
+        console.log("USER LOGGED IN");
         const user = await User.findById(req.user?._id);
+        console.log("watchHistory BEFORE =", user?.watchHistory);
+
         const isAlreadyWatched = user?.watchHistory?.some(id => id.toString()===videoId.toString());
+        console.log("isAlreadyWatched =", isAlreadyWatched);
 
         // Only increment the views and add to user watchHistory if the video is unwatched previously by user
         if (!isAlreadyWatched) {
@@ -120,11 +129,17 @@ const getVideoById = asyncHandler(async (req, res) => {
                 $inc: { views: 1 }
             });
             //adding to watch history such that it would increment once only
-            await User.findByIdAndUpdate(req.user?._id, {
+            const updatedUser=await User.findByIdAndUpdate(req.user?._id, {
                 $addToSet: {
                     watchHistory: videoId
                 }
-            });
+                
+            },
+            {
+                    new:true
+            }
+        );
+        console.log("watchHistory AFTER =", updatedUser.watchHistory);
         }
     }
 
