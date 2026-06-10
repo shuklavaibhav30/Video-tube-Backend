@@ -26,7 +26,7 @@ import { verifyJWT } from "../middlewares/auth.middleware.js";
 // .get(getVideoById)
 // .patch(updateVideo)
 // .delete(deleteVideo)
-
+const router=Router()
 router.route("/").get(getAllVideos)
 router.route("/:videoId").get(getVideoById)
 // All the following routes require authentication
