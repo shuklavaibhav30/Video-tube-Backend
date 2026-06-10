@@ -478,6 +478,22 @@ const deleteUserAccount=asyncHandler(async(req,res)=>{
     .clearCookie("refreshToken",cookieOptions)
     .json(new ApiResponse(200,{},"User account and all associated Data deleted successfully!"))
 })
+
+const googleAuthCallback=asyncHandler(async(req,res)=>{
+    const user=req.user;
+
+    if(!user){
+        throw new ApiError(500,"Google Authentication Failed!!!");
+    }
+    const { accessToken, refreshToken }=await generateAccessAndRefreshTokens(user._id);
+    const loggedInUser=await User.findById(user._id).select("-password -refreshToken");
+
+    return res
+    .status(200)
+    .cookie("accessToken",accessToken,cookieOptions)
+    .cookie("refreshToken",refreshToken,cookieOptions)
+    .redirect(`${process.env.CLIENT_URL}/auth-success?accessToken=${accessToken}&refreshToken=${refreshToken}`);
+});
 export {registerUser,
     loginUser,
     logoutUser,
@@ -489,6 +505,7 @@ export {registerUser,
     updateCoverImage,
     getUserChannelProfile,
     getWatchHistory,
-    deleteUserAccount
+    deleteUserAccount,
+    googleAuthCallback
 }
 

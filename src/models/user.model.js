@@ -27,6 +27,11 @@ const userSchema=new Schema(
             trim:true,
             index:true
         },
+        googleId:{
+            type:String,
+            unique:true,
+            sparse:true
+        },
         avatar:{
             type:String, //cloudinary url
             required:true
@@ -42,7 +47,9 @@ const userSchema=new Schema(
         ],
         password:{
             type:String,
-            required:[true,"Password is required"]
+            required:function(){
+                return !this.googleId; //Required Only If GoogleId not present
+            }
         },
         refreshToken:{
             type:String
